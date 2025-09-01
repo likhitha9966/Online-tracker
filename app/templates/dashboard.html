@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% macro format_seconds(seconds) -%}
+    {% set s = seconds or 0 %}
+    {% set hours = (s / 3600) | int %}
+    {% set minutes = ((s % 3600) / 60) | int %}
+    {% set secs = s % 60 %}
+    {{ '%02d:%02d:%02d' % (hours, minutes, secs) }}
+{%- endmacro %}
+
+{% block content %}
+    <div class="row mb-4">
+        <!-- Weekly Performance Chart -->
+        <div class="col-md-9">
+            <h2>Weekly Performance</h2>
+            <div class="card card-body">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+        <!-- Export Section -->
+        <div class="col-md-3">
+            <h2>Export</h2>
+            <div class="card card-body d-grid gap-2">
+                <p>Download a full report of all your tasks.</p>
+                <a href="{{ url_for('main.export_csv') }}" class="btn btn-primary">
+                    Download Report (CSV)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Add New Task Form -->
+        <div class="col-md-4">
+            <h2>Add a New Task</h2>
+            <div class="card card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows="3") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Task List -->
+        <div class="col-md-8">
+            <h2>Your Tasks</h2>
+            {% if tasks %}
+                {% for task in tasks %}
+                <div class="card mb-3 {% if task.is_completed %}border-success bg-light{% endif %}" data-task-id="{{ task.id }}">
+                    <div class="card-body">
+                        <h5 class="card-title {% if task.is_completed %}text-decoration-line-through text-muted{% endif %}">
+                            {{ task.title }}
+                        </h5>
+                        <p class="card-text {% if task.is_completed %}text-decoration-line-through text-muted{% endif %}">
+                            {{ task.description }}
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Total Time: {{ format_seconds(task.total_time_spent) }}
+                            </small>
+                            <span class="badge bg-primary timer-display">00:00:00</span>
+                        </div>
+                        <hr>
+
+                        <div class="d-flex justify-content-end">
+                            <button class="btn btn-success btn-sm me-2 start-timer-btn">Start</button>
+                            <button class="btn btn-danger btn-sm me-2 stop-timer-btn" style="display: none;">Stop</button>
+                            <form action="{{ url_for('main.toggle_complete', task_id=task.id) }}" method="POST" class="d-inline">
+                                {% if task.is_completed %}
+                                    <input type="submit" value="Mark Incomplete" class="btn btn-warning btn-sm">
+                                {% else %}
+                                    <input type="submit" value="Mark Complete" class="btn btn-info btn-sm">
+                                {% endif %}
+                            </form>
+                            <form action="{{ url_for('main.delete_task', task_id=task.id) }}" method="POST" class="d-inline ms-2">
+                                <input type="submit" value="Delete" class="btn btn-danger btn-sm">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>You have no tasks yet. Add one using the form!</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

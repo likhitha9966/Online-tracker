@@ -12,7 +12,7 @@ A web application built with Flask (Python) to manage tasks and track productivi
 
 ## Tech Stack
 - Backend: Python, Flask
-- Frontend: HTML, CSS, Bootstrap
+- Frontend: HTML, CSS, java script
 - Other: Jinja2 Templates
 
 ## Setup Instructions
